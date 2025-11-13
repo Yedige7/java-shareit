@@ -58,7 +58,7 @@ public class UserRepositoryImpl implements UserRepository {
         if (user.isEmpty()) {
             log.warn("Попытка удалить несуществующего пользователя с id={} из InMemory хранилища", id);
         } else {
-            users.remove(user);
+            users.remove(user.get());
             log.info("Пользователь с id={} удален из InMemory хранилища", id);
         }
     }
@@ -67,7 +67,7 @@ public class UserRepositoryImpl implements UserRepository {
         long lastId = users.stream()
                 .mapToLong(User::getId)
                 .max()
-                .orElse(1);
+                .orElse(0);
         return lastId + 1;
     }
 
