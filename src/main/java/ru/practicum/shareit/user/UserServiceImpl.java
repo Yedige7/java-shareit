@@ -17,18 +17,6 @@ class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
 
-
-//    private static UserDto toDto(User u) {
-//        UserDto d = new UserDto();
-//        d.setId(u.getId());
-//        d.setName(u.getName());
-//        d.setEmail(u.getEmail());
-//        return d;
-//    }
-//    private static User fromDto(UserDto d) {
-//        return new User(d.getId(), d.getName(), d.getEmail());
-//    }
-
     @Override
     public UserDto create(UserDto dto) {
         if (repository.existsByEmail(dto.getEmail())) throw new ValidationException("email already used");
@@ -37,20 +25,20 @@ class UserServiceImpl implements UserService {
 
     @Override
     public UserDto update(Long id, UserDto patch) {
-        User u = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
-        if (patch.getName() != null && !patch.getName().isBlank()) u.setName(patch.getName());
+        User user = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
+        if (patch.getName() != null && !patch.getName().isBlank()) user.setName(patch.getName());
         if (patch.getEmail() != null && !patch.getEmail().isBlank()) {
             if (repository.existsByEmail(patch.getEmail())) throw new ValidationException("email already used");
-            u.setEmail(patch.getEmail());
+            user.setEmail(patch.getEmail());
         }
-        return toDto(repository.update(u));
+        return toDto(repository.update(user));
 
     }
 
     @Override
     public UserDto getById(Long id) {
-        User u = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
-        return toDto(u);
+        User user = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
+        return toDto(user);
     }
 
     @Override
@@ -60,7 +48,7 @@ class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long id) {
-        User u = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
+        User user = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
         repository.delete(id);
     }
 }

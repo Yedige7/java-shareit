@@ -32,14 +32,14 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> getUser(Long id) {
         if (id == null) return Optional.empty();
         return users.stream()
-                .filter(u -> Objects.equals(u.getId(), id))
+                .filter(user -> Objects.equals(user.getId(), id))
                 .findFirst();
     }
 
     @Override
     public User update(User newUser) {
         Optional<User> oldUser = users.stream()
-                .filter(u -> Objects.equals(u.getId(), newUser.getId()))
+                .filter(user -> Objects.equals(user.getId(), newUser.getId()))
                 .findFirst();
         if (oldUser.isEmpty()) {
             log.warn("Попытка ообновить несуществующего пользователя с id={} из InMemory хранилища", newUser.getId());
@@ -77,7 +77,7 @@ public class UserRepositoryImpl implements UserRepository {
             return true;
         }
         Optional<User> isUser = users.stream()
-                .filter(u -> Objects.equals(u.getEmail(), email))
+                .filter(user -> Objects.equals(user.getEmail(), email))
                 .findFirst();
         return isUser.isPresent();
     }

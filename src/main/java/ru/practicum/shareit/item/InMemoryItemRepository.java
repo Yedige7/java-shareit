@@ -31,21 +31,24 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public List<Item> searchAvailable(String name) {
         if (name == null || name.isBlank()) return List.of();
-        final String q = name.toLowerCase();
+        final String nameLowerCase = name.toLowerCase();
         return storage.values().stream()
                 .filter(Objects::nonNull)
-                .filter(i -> Boolean.TRUE.equals(i.getAvailable())) // безопасно к null
-                .filter(i -> {
-                    final String n = i.getName();
-                    final String d = i.getDescription();
-                    return (n != null && n.toLowerCase(Locale.ROOT).contains(q))
-                            || (d != null && d.toLowerCase(Locale.ROOT).contains(q));
+                .filter(item -> Boolean.TRUE.equals(item.getAvailable())) // безопасно к null
+                .filter(item -> {
+                    final String itemName = item.getName();
+                    final String description = item.getDescription();
+                    return (itemName != null && itemName.toLowerCase(Locale.ROOT).contains(nameLowerCase))
+                            || (description != null && description.toLowerCase(Locale.ROOT).contains(nameLowerCase));
                 })
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Item> findByOwnerId(Long ownerId) {
-        return storage.values().stream().filter(i -> Objects.equals(i.getOwnerId(), ownerId)).collect(Collectors.toList());
+        return storage.values()
+                .stream()
+                .filter(item -> Objects.equals(item.getOwnerId(), ownerId))
+                .collect(Collectors.toList());
     }
 }
