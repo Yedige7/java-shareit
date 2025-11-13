@@ -6,7 +6,6 @@ import ru.practicum.shareit.item.model.Item;
 
 @NoArgsConstructor
 public class ItemMapper {
-
     public static ItemDto toItemDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
