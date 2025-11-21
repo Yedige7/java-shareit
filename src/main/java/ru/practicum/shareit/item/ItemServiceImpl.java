@@ -33,7 +33,6 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
 
 
-
     @Override
     public ItemDto create(Long userId, ItemDto dto) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
