@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ class UserServiceImpl implements UserService {
             if (repository.existsByEmail(patch.getEmail())) throw new ValidationException("email already used");
             user.setEmail(patch.getEmail());
         }
-        return toDto(repository.update(user));
+        return toDto(repository.save(user));
 
     }
 
@@ -49,6 +50,6 @@ class UserServiceImpl implements UserService {
     @Override
     public void delete(Long id) {
         User user = repository.findById(id).orElseThrow(() -> new NotFoundException("user not found"));
-        repository.delete(id);
+        repository.delete(user);
     }
 }
