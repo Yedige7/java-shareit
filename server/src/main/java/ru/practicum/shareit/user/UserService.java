@@ -5,7 +5,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import java.util.List;
 
 
-interface UserService {
+public interface UserService {
     UserDto create(UserDto dto);
 
     UserDto update(Long id, UserDto patch);

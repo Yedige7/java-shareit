@@ -13,6 +13,7 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,26 +35,30 @@ class ItemRequestControllerTest {
     private ItemRequestService service;
 
     @Test
-    void create_validRequest_callsServiceAndReturns2xx() throws Exception {
-        ItemRequestDto request = ItemRequestDto.builder()
+    void create_callsServiceWithUserIdAndDescription() throws Exception {
+        ItemRequestDto body = ItemRequestDto.builder()
                 .description("Нужна дрель")
                 .build();
 
-        // можно и не мокать, но так явнее
+        ItemRequestDto response = ItemRequestDto.builder()
+                .id(1L)
+                .description("Нужна дрель")
+                .build();
+
         when(service.create(eq(1L), eq("Нужна дрель")))
-                .thenReturn(request);
+                .thenReturn(response);
 
         mockMvc.perform(post("/requests")
                         .header("X-Sharer-User-Id", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(mapper.writeValueAsString(request)))
-                .andExpect(status().is2xxSuccessful());
+                        .content(mapper.writeValueAsString(body)))
+                .andExpect(status().isOk());
 
         verify(service).create(1L, "Нужна дрель");
     }
 
     @Test
-    void getOwn_callsServiceWithHeaderUserId() throws Exception {
+    void getOwn_callsServiceWithUserId() throws Exception {
         when(service.getOwn(1L)).thenReturn(List.of());
 
         mockMvc.perform(get("/requests")
@@ -64,7 +69,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getAll_defaultPagination_usesDefaults() throws Exception {
+    void getAll_withoutParams_usesDefaultFromAndSize() throws Exception {
         when(service.getAll(1L, 0, 10)).thenReturn(List.of());
 
         mockMvc.perform(get("/requests/all")
@@ -75,7 +80,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void getAll_withPaginationParams_passesThemToService() throws Exception {
+    void getAll_withParams_passesThemToService() throws Exception {
         when(service.getAll(1L, 5, 20)).thenReturn(List.of());
 
         mockMvc.perform(get("/requests/all")
@@ -91,7 +96,7 @@ class ItemRequestControllerTest {
     void getById_callsServiceWithUserIdAndRequestId() throws Exception {
         ItemRequestDto response = ItemRequestDto.builder()
                 .id(100L)
-                .description("Ответ")
+                .description("Описание")
                 .build();
 
         when(service.getById(1L, 100L)).thenReturn(response);

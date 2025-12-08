@@ -8,6 +8,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -26,6 +28,8 @@ class ItemServiceIntegrationTest {
     private UserRepository userRepository;
 
     private Long ownerId;
+    @Autowired
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -47,6 +51,61 @@ class ItemServiceIntegrationTest {
                 .available(true)
                 .build();
         itemService.create(ownerId, item2);
+    }
+
+    @Test
+    void createAndGetById_basicFlow() {
+        UserDto owner = new UserDto();
+        owner.setName("Owner");
+        owner.setEmail("owner@example.com");
+        owner = userService.create(owner);
+
+        ItemDto toCreate = ItemDto.builder()
+                .name("Drill")
+                .description("Good drill")
+                .available(true)
+                .build();
+
+        ItemDto created = itemService.create(owner.getId(), toCreate);
+
+        ItemDto found = itemService.getById(owner.getId(), created.getId());
+
+        assertThat(found.getId()).isNotNull();
+        assertThat(found.getName()).isEqualTo("Drill");
+        assertThat(found.getDescription()).isEqualTo("Good drill");
+        assertThat(found.getAvailable()).isTrue();
+    }
+
+    @Test
+    void search_findsByNameOrDescription_ignoringCase() {
+        UserDto owner = new UserDto();
+        owner.setName("Owner2");
+        owner.setEmail("owner2@example.com");
+        owner = userService.create(owner);
+
+
+        itemService.create(owner.getId(), ItemDto.builder()
+                .name("Power drill")
+                .description("For concrete")
+                .available(true)
+                .build());
+
+        itemService.create(owner.getId(), ItemDto.builder()
+                .name("Hammer")
+                .description("Steel hammer")
+                .available(true)
+                .build());
+
+
+        List<ItemDto> result = itemService.search("drill");
+
+        var names = result.stream()
+                .map(ItemDto::getName)
+                .toList();
+
+        // важное
+        assertThat(names).contains("Power drill");
+        assertThat(names).doesNotContain("Hammer");
     }
 
     @Test

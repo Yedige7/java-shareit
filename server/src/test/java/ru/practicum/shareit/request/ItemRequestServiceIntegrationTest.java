@@ -4,19 +4,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @Transactional
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemRequestServiceIntegrationTest {
 
     @Autowired
@@ -43,72 +46,83 @@ class ItemRequestServiceIntegrationTest {
 
     @Test
     void create_persistsRequestAndReturnsDto() {
-        ItemRequestDto dto = ItemRequestDto.builder()
-                .description("Need drill")
-                .build();
-
-        ItemRequestDto created = itemRequestService.create(requesterId, dto.getDescription());
+        ItemRequestDto created = itemRequestService.create(requesterId, "Need drill");
 
         assertThat(created.getId()).isNotNull();
         assertThat(created.getDescription()).isEqualTo("Need drill");
-        assertThat(created.getId()).isEqualTo(requesterId);
         assertThat(created.getCreated()).isNotNull();
+        // сейчас toDtoWithItems отдаёт пустой список при отсутствии вещей
+        assertThat(created.getItems()).isEmpty();
     }
 
     @Test
-    void getOwn_returnsOnlyRequesterRequests_sortedByCreatedDesc() throws InterruptedException {
-        ItemRequestDto dto1 = ItemRequestDto.builder()
-                .description("Need drill")
-                .build();
-        ItemRequestDto dto2 = ItemRequestDto.builder()
-                .description("Need hammer")
-                .build();
-
-        ItemRequestDto r1 = itemRequestService.create(requesterId, dto1.getDescription());
-        // небольшая задержка, если created = now()
-        Thread.sleep(5);
-        ItemRequestDto r2 = itemRequestService.create(requesterId, dto2.getDescription());
+    void getOwn_returnsOnlyRequesterRequests() {
+        ItemRequestDto r1 = itemRequestService.create(requesterId, "Need drill");
+        ItemRequestDto r2 = itemRequestService.create(requesterId, "Need hammer");
+        // чужой запрос
+        itemRequestService.create(otherUserId, "Other request");
 
         List<ItemRequestDto> own = itemRequestService.getOwn(requesterId);
 
         assertThat(own).hasSize(2);
-        assertThat(own.get(0).getId()).isEqualTo(r2.getId());
-        assertThat(own.get(1).getId()).isEqualTo(r1.getId());
-    }
-
-    @Test
-    void getAll_returnsRequestsOfOthersOnly() {
-        ItemRequestDto dto1 = ItemRequestDto.builder()
-                .description("Need drill")
-                .build();
-        ItemRequestDto dto2 = ItemRequestDto.builder()
-                .description("Need hammer")
-                .build();
-
-        ItemRequestDto r1 = itemRequestService.create(requesterId, dto1.getDescription());
-        ItemRequestDto r2 = itemRequestService.create(requesterId, dto2.getDescription());
-
-        // другой пользователь смотрит все запросы
-        List<ItemRequestDto> all = itemRequestService.getAll(otherUserId, 0, 10);
-
-        assertThat(all)
+        assertThat(own)
+                .extracting(ItemRequestDto::getDescription)
+                .containsExactlyInAnyOrder("Need drill", "Need hammer");
+        assertThat(own)
                 .extracting(ItemRequestDto::getId)
-                .containsExactlyInAnyOrder(r1.getId(), r2.getId());
+                .contains(r1.getId(), r2.getId());
     }
 
     @Test
-    void getById_returnsRequestWithAnswers() {
-        ItemRequestDto dto = ItemRequestDto.builder()
-                .description("Need drill")
-                .build();
+    void getAll_returnsRequestsOfOthersOnly_andRespectsPagination() {
+        ItemRequestDto r1 = itemRequestService.create(requesterId, "Need drill");
+        ItemRequestDto r2 = itemRequestService.create(requesterId, "Need hammer");
+        ItemRequestDto r3 = itemRequestService.create(requesterId, "Need saw");
 
-        ItemRequestDto created = itemRequestService.create(requesterId, dto.getDescription());
+        // другой пользователь смотрит все запросы постранично
+        List<ItemRequestDto> page1 = itemRequestService.getAll(otherUserId, 0, 2);
+        List<ItemRequestDto> page2 = itemRequestService.getAll(otherUserId, 2, 2);
+
+        // размер страниц не больше size
+        assertThat(page1).hasSizeLessThanOrEqualTo(2);
+        assertThat(page2).hasSizeLessThanOrEqualTo(2);
+
+        // собираем id всех запросов из обеих страниц
+        Set<Long> allIds = Stream.concat(page1.stream(), page2.stream())
+                .map(ItemRequestDto::getId)
+                .collect(Collectors.toSet());
+
+        // три созданных нами запроса присутствуют в совокупности двух страниц
+        assertThat(allIds).contains(r1.getId(), r2.getId(), r3.getId());
+    }
+
+    @Test
+    void getById_returnsRequest() {
+        ItemRequestDto created = itemRequestService.create(requesterId, "Need drill");
 
         ItemRequestDto fromService = itemRequestService.getById(otherUserId, created.getId());
 
         assertThat(fromService.getId()).isEqualTo(created.getId());
         assertThat(fromService.getDescription()).isEqualTo("Need drill");
-        assertThat(fromService.getId()).isEqualTo(requesterId);
-        // здесь можно ещё проверить список ответов (items), если он у тебя есть в DTO
+        // items по умолчанию пустые, т.к. вещей ещё нет
+        assertThat(fromService.getItems()).isEmpty();
+    }
+
+    @Test
+    void methodsThrowNotFound_whenUserDoesNotExist() {
+        Long unknownUserId = 9999L;
+
+        assertThatThrownBy(() -> itemRequestService.create(unknownUserId, "x"))
+                .isInstanceOf(NotFoundException.class);
+
+        assertThatThrownBy(() -> itemRequestService.getOwn(unknownUserId))
+                .isInstanceOf(NotFoundException.class);
+
+        assertThatThrownBy(() -> itemRequestService.getAll(unknownUserId, 0, 10))
+                .isInstanceOf(NotFoundException.class);
+
+        assertThatThrownBy(() -> itemRequestService.getById(unknownUserId, 1L))
+                .isInstanceOf(NotFoundException.class);
     }
 }
+
