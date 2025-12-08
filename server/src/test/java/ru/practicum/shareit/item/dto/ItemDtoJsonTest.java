@@ -53,15 +53,15 @@ class ItemDtoJsonTest {
     @Test
     void deserialize_itemDto_ok() throws Exception {
         String content = """
-                {
+        {
                   "id": 1,
                   "name": "Drill",
                   "description": "Good drill",
                   "available": true,
                   "ownerId": 2,
                   "requestId": 3
-                }
-                """;
+        }
+        """;
 
         ItemDto dto = json.parseObject(content);
 

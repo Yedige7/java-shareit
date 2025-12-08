@@ -32,12 +32,12 @@ class UserDtoJsonTest {
     @Test
     void deserialize_userDto_ok() throws Exception {
         String content = """
-                {
+        {
                   "id": 1,
                   "name": "John",
                   "email": "john@example.com"
-                }
-                """;
+        }
+        """;
 
         UserDto dto = json.parseObject(content);
 

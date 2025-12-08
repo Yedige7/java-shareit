@@ -46,15 +46,15 @@ class BookingDtoJsonTest {
     @Test
     void deserializeBookingDto() throws JsonProcessingException {
         String body = """
-                {
+        {
                   "id": 1,
                   "itemId": 2,
                   "bookerId": 3,
                   "start": "2025-12-31T10:15:00",
                   "end": "2026-01-01T10:15:00",
                   "status": "APPROVED"
-                }
-                """;
+        }
+        """;
 
         BookingDto dto = mapper.readValue(body, BookingDto.class);
 
