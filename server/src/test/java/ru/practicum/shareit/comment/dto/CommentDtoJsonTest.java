@@ -39,10 +39,9 @@ class CommentDtoJsonTest {
         String jsonBody = "{\n" +
                 " \"id\": 5,\n" +
                 "  \"text\": \"Comment text\",\n" +
-                "  \"authorName\": \"Mike\"\n" +
+                "  \"authorName\": \"Mike\",\n" +
                 "  \"created\": \"2025-02-10T13:12:00\"\n" +
                 "}";
-
 
 
         var dto = json.parseObject(jsonBody);
