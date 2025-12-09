@@ -4,10 +4,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ShareItTests {
+class ShareItServerTest {
 
     @Test
-    void contextLoads() {
+    void mainRuns() {
+        ShareItServer.main(new String[] {});
     }
 
 }
