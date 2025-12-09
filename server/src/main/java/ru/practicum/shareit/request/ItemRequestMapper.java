@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request;
 
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -10,11 +11,11 @@ public class ItemRequestMapper {
     private ItemRequestMapper() {
     }
 
-    public static ItemRequest toItemRequest(Long userId, String description) {
+    public static ItemRequest toItemRequest(User user, String description) {
         return ItemRequest.builder()
                 .description(description)
                 .created(LocalDateTime.now())
-                .requestorId(userId)
+                .requestor(user)
                 .build();
     }
 

@@ -11,6 +11,7 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDtoShort;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
@@ -25,8 +26,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     @Transactional
     public ItemRequestDto create(Long userId, String description) {
-        ensureUserExists(userId);
-        ItemRequest entity = ItemRequestMapper.toItemRequest(userId, description);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("user not found"));
+        ItemRequest entity = ItemRequestMapper.toItemRequest(user, description);
         return toDtoWithItems(requestRepository.save(entity));
     }
 

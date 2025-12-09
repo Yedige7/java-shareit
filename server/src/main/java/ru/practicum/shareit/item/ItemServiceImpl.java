@@ -72,7 +72,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto update(Long userId, Long itemId, ItemDto dto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("user not found"));
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("item not found"));
         if (dto.getName() != null && !dto.getName().isBlank()) item.setName(dto.getName());
         if (dto.getDescription() != null && !dto.getDescription().isBlank()) {
@@ -81,6 +81,7 @@ public class ItemServiceImpl implements ItemService {
         if (dto.getAvailable() != null) {
             item.setAvailable(dto.getAvailable());
         }
+        dto.setComments(commentRepository.findByItemIdOrderByCreatedDesc(dto.getId()).stream().map(CommentMapper::toDto).collect(Collectors.toList()));
         Item saved = itemRepository.save(item);
         return ItemMapper.toItemDto(saved);
     }
