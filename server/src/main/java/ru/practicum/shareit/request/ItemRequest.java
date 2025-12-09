@@ -24,8 +24,6 @@ public class ItemRequest {
     private Long id;
     @Column(nullable = false, length = 255)
     private String description;
-//    @Column(name = "requestor_id", nullable = false)
-//    private Long requestorId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requestor_id", nullable = false)

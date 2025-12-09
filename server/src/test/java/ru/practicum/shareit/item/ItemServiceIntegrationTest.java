@@ -103,7 +103,7 @@ class ItemServiceIntegrationTest {
                 .map(ItemDto::getName)
                 .toList();
 
-        // важное
+
         assertThat(names).contains("Power drill");
         assertThat(names).doesNotContain("Hammer");
     }

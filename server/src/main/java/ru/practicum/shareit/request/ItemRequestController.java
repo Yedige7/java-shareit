@@ -2,6 +2,7 @@ package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import java.util.List;
@@ -31,6 +32,9 @@ public class ItemRequestController {
     public List<ItemRequestDto> getAll(@RequestHeader("X-Sharer-User-Id") Long userId,
                                        @RequestParam(defaultValue = "0") int from,
                                        @RequestParam(defaultValue = "10") int size) {
+        if (from < 0 || size <= 0) {
+            throw new ValidationException("from must be >= 0 and size > 0");
+        }
         return service.getAll(userId, from, size);
     }
 

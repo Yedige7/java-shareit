@@ -106,4 +106,22 @@ class ItemRequestControllerTest {
 
         verify(service).getById(1L, 100L);
     }
+
+    @Test
+    void getAll_withNegativeFrom_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("from", "-1")
+                        .param("size", "10"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getAll_withNonPositiveSize_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("from", "0")
+                        .param("size", "0"))
+                .andExpect(status().isBadRequest());
+    }
 }

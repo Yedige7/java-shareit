@@ -53,10 +53,6 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("Некорректные даты бронирования");
         }
 
-//        if (start.isBefore(LocalDateTime.now())) {
-//            throw new ValidationException("Дата начала бронирования не может быть в прошлом");
-//        }
-
         Booking booking = BookingMapper.toBooking(dto);
         booking.setItem(item);
         booking.setBooker(booker);

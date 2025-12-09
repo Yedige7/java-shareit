@@ -32,7 +32,6 @@ class ItemRequestDtoJsonTest {
 
         assertThat(result).extractingJsonPathNumberValue("$.id").isEqualTo(1);
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("Need drill");
-        // Spring Boot по умолчанию сериализует LocalDateTime в ISO-формате
         assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo("2023-12-01T10:15:30");
     }
 
