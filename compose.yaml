@@ -3,7 +3,7 @@ services:
     image: postgres:16.1
     container_name: shareit-postgres
     ports:
-      - "6432:5432"                # На хосте порт 6432, внутри контейнера 5432
+      - "6432:5432"                # localhost:6432 -> контейнер 5432
     volumes:
       - ./volumes/postgres:/var/lib/postgresql/data
     environment:
